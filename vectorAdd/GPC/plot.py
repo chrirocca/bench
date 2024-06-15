@@ -36,4 +36,4 @@ ax.yaxis.set_minor_locator(ticker.MultipleLocator(5))
 
 plt.show()
 
-plt.savefig('incrGPC.png', dpi = 600, bbox_inches='tight')
+plt.savefig('../results/incrGPC.png', dpi = 600, bbox_inches='tight')
