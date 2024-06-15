@@ -68,10 +68,10 @@ int main(int argc, char *argv[])
     // Print the vector length to be used, and compute its size
     int numElements = 5000000;
     int threadsPerBlock = 256;
-    int blocksPerGrid = 80;
+    int blocksPerGrid = 108;
 
     // Check if command line arguments were provided
-    int GPCs[6] = {0};
+    int GPCs[7] = {0};
     int num_GPCs = 0;
 
     for (int i = 1; i < argc; i++) {
@@ -82,6 +82,10 @@ int main(int argc, char *argv[])
         else if (strcmp(argv[i], "-threads") == 0 && i + 1 < argc) {
             // Convert the next argument to an integer and use it as the number of threads per block
             threadsPerBlock = atoi(argv[i + 1]);
+        }
+        else if (strcmp(argv[i], "-blocks") == 0 && i + 1 < argc) {
+            // Convert the next argument to an integer and use it as the number of blocks per grid
+            blocksPerGrid = atoi(argv[i + 1]);
         }
         else if (strcmp(argv[i], "-gpc") == 0 && i + 1 < argc) {
             // Split the next argument by commas
@@ -97,7 +101,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    // Define the GPC arrays
+/*     // Define the GPC arrays
     unsigned int GPC_arrays[6][14] = {
         {0, 12, 24, 36, 48, 60, 70, 1, 13, 25, 37, 49, 61, 71},
         {2, 14, 26, 38, 50, 62, 72, 3, 15, 27, 39, 51, 63, 73},
@@ -105,9 +109,19 @@ int main(int argc, char *argv[])
         {6, 18, 30, 42, 54, 66, 76, 7, 19, 31, 43, 55, 67, 77},
         {8, 20, 32, 44, 56, 68, 9, 21, 33, 45, 57, 69},
         {10, 22, 34, 46, 58, 78, 11, 23, 35, 47, 59, 79}
+    }; */
+
+    unsigned int GPC_arrays[7][16] = {
+        {0, 1, 14, 15, 28, 29, 42, 43, 56, 57, 70, 71, 84, 85, 98, 99},
+        {2, 3, 30, 31, 17, 16, 73, 72, 59, 58, 99, 98, 45, 44, 87, 86},
+        {4, 5, 33, 32, 19, 18, 75, 74, 61, 60, 101, 100, 47, 46, 89, 88},
+        {6, 7, 20, 21, 35, 34, 63, 62, 77, 76, 103, 102, 49, 48, 91, 90},
+        {8, 9, 22, 23, 37, 36, 79, 78, 65, 64, 105, 104, 51, 50, 93, 92},
+        {10, 11, 39, 38, 25, 24, 81, 80, 95, 94, 52, 53, 67, 66, 0, 0},
+        {12, 13, 40, 41, 27, 26, 82, 83, 55, 54, 97, 96, 69, 68, 0, 0}
     };
 
-    // Compute the overall size and create the overall array
+/*     // Compute the overall size and create the overall array
     int overall_size = 0;
     for (int i = 0; i < num_GPCs; i++) {
         overall_size += (GPCs[i] < 4) ? 14 : 12;
@@ -120,6 +134,23 @@ int main(int argc, char *argv[])
     int current_position = 0;
     for (int i = 0; i < num_GPCs; i++) {
         int GPC_size = (GPCs[i] < 4) ? 14 : 12;
+        memcpy(&hSM_ids[current_position], GPC_arrays[GPCs[i]], sizeof(int) * GPC_size);
+        current_position += GPC_size;
+    } */
+
+    // Compute the overall size and create the overall array
+    int overall_size = 0;
+    for (int i = 0; i < num_GPCs; i++) {
+        overall_size += (GPCs[i] < 5) ? 16 : 14;
+    }
+    int *hSM_ids = (int *)malloc(sizeof(int) * overall_size);
+    int *dSM_ids;
+    cudaMalloc((void**)&dSM_ids, sizeof(int) * overall_size);
+
+    // Fill the overall array
+    int current_position = 0;
+    for (int i = 0; i < num_GPCs; i++) {
+        int GPC_size = (GPCs[i] < 5) ? 16 : 14;
         memcpy(&hSM_ids[current_position], GPC_arrays[GPCs[i]], sizeof(int) * GPC_size);
         current_position += GPC_size;
     }

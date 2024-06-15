@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy as np
+import sys
 
 def extract_values(filename):
     try:
@@ -12,23 +13,27 @@ def extract_values(filename):
         print(f"Error reading file {filename}: {e}")
         return None
 
-values = extract_values('incGPC.log')
+# Get filename from command-line arguments
+filename = 'incGPC_' + sys.argv[1] + '.log' 
+values = extract_values(filename)
 x = range(1, len(values) + 1)
 
 plt.figure(figsize=(16/2.54, 6/2.54))
 plt.scatter(x, values, color='#808080', edgecolor='black', linewidth=0.4, s=25)
 plt.xlabel('GPCs')
 plt.ylabel('GFlops')
-plt.ylim(0, 141)
 
 # Fit with polyfit
-z = np.polyfit(x, values, 2)
+z = np.polyfit(x, values, 3)
 p = np.poly1d(z)
 plt.plot(x,p(x),"k--")
 
-# Set major ticks every 10 on x, and every 10 on y.
-plt.xticks(range(1, 7, 1))
-plt.yticks(range(0, 140, 10))
+xticks_max = len(values) + 1 
+plt.xticks(range(1, xticks_max, 1))
+
+y_max = max(values) + 20
+plt.ylim(0, y_max)
+plt.yticks(range(0, int(y_max), 15))
 
 # Set minor ticks every 1 on x, and every 1 on y.
 ax = plt.gca()
@@ -36,4 +41,5 @@ ax.yaxis.set_minor_locator(ticker.MultipleLocator(5))
 
 plt.show()
 
-plt.savefig('../results/incrGPC.png', dpi = 600, bbox_inches='tight')
+# Save the figure with a filename based on the input filename
+plt.savefig(f'../results/incGPC_{sys.argv[1]}.png', dpi = 600, bbox_inches='tight')

@@ -1,13 +1,16 @@
 #!/bin/bash
 
-rm -f incSM.log
+SMnum=108
+logFile="incSM_${SMnum}.log"
+
+rm -f $logFile
 
 make
 
 # Run the program with different parameters
-for coremax in {1..81}
+for ((coremax=1; coremax<SMnum+1; coremax=coremax+1))
 do
-    ./vectorAdd -threads 1024 -coremax $coremax >> incSM.log
+    ./vectorAdd -threads 1024 -blocks $SMnum -coremax $coremax >> $logFile
 done
 
-python3 plot.py
+python3 plot.py $SMnum
