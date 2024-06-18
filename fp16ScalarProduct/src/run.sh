@@ -5,7 +5,7 @@ rm -f incGPC.log
 make
 
 # Run the program with different parameters
-for gpc in {0..5}
+for gpc in {0..6}
 do
     gpc_list=$(seq -s, 0 $gpc)
     ./fp16ScalarProduct -gpc $gpc_list >> incGPC.log
